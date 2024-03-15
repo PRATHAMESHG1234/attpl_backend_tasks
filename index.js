@@ -1,5 +1,6 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
+const cron = require("node-cron");
 require("dotenv").config();
 
 const app = express();
@@ -10,6 +11,32 @@ console.log(uri); // Use environment variable for MongoDB connection string
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+});
+
+// Function to fetch products from MongoDB
+async function fetchProducts() {
+  try {
+    await client.connect();
+    const database = client.db("attpl_tasks");
+    const products = database.collection("products");
+    const data = await products.find().toArray();
+    return data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return null;
+  } finally {
+    await client.close();
+  }
+}
+
+// Define a cron job to fetch products every minute (change schedule as needed)
+cron.schedule("* * * * *", async () => {
+  const products = await fetchProducts();
+  if (products) {
+    console.log("Fetched products:", products);
+  } else {
+    console.log("Failed to fetch products.");
+  }
 });
 
 // Connect to MongoDB when the server starts
@@ -28,12 +55,15 @@ async function startServer() {
 
 startServer();
 
+// API endpoint to fetch products
 app.get("/products", async (req, res) => {
   try {
-    const database = client.db("attpl_tasks");
-    const products = database.collection("products");
-    const data = await products.find().toArray();
-    res.json(data);
+    const products = await fetchProducts();
+    if (products) {
+      res.json(products);
+    } else {
+      res.status(500).send("Failed to fetch products.");
+    }
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
