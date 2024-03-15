@@ -1,17 +1,13 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
-const cron = require("node-cron");
 require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 const uri = process.env.MONGODB_URI;
 console.log(uri); // Use environment variable for MongoDB connection string
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = new MongoClient(uri);
 
 // Function to fetch products from MongoDB
 async function fetchProducts() {
@@ -28,16 +24,6 @@ async function fetchProducts() {
     await client.close();
   }
 }
-
-// Define a cron job to fetch products every minute (change schedule as needed)
-cron.schedule("* * * * *", async () => {
-  const products = await fetchProducts();
-  if (products) {
-    console.log("Fetched products:", products);
-  } else {
-    console.log("Failed to fetch products.");
-  }
-});
 
 // Connect to MongoDB when the server starts
 async function startServer() {
