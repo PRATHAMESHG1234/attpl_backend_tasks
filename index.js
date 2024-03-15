@@ -14,6 +14,7 @@ const client = new MongoClient(uri, {
 app.get("/products", async (req, res) => {
   try {
     await client.connect();
+    console.log("database connected");
     const database = client.db("attpl_tasks");
     const products = database.collection("products");
     const data = await products.find().toArray();
