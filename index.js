@@ -11,10 +11,24 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 });
 
-app.get("/products", async (req, res) => {
+// Connect to MongoDB when the server starts
+async function startServer() {
   try {
     await client.connect();
-    console.log("database connected");
+    console.log("Connected to MongoDB");
+    app.listen(port, () => {
+      console.log(`Server is listening at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+app.get("/products", async (req, res) => {
+  try {
     const database = client.db("attpl_tasks");
     const products = database.collection("products");
     const data = await products.find().toArray();
@@ -22,8 +36,6 @@ app.get("/products", async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
-  } finally {
-    await client.close();
   }
 });
 
@@ -37,8 +49,4 @@ process.on("SIGINT", async () => {
     console.error("Error closing MongoDB connection:", error);
     process.exit(1);
   }
-});
-
-app.listen(port, () => {
-  console.log(`Server is listening at http://localhost:${port}`);
 });
