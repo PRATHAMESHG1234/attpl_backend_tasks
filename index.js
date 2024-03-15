@@ -5,7 +5,8 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-const uri = process.env.MONGODB_URI; // Use environment variable for MongoDB connection string
+const uri = process.env.MONGODB_URI;
+console.log(uri); // Use environment variable for MongoDB connection string
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
