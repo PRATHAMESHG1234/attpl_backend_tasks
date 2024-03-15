@@ -4,7 +4,7 @@ const cron = require("node-cron");
 require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 const uri = process.env.MONGODB_URI;
 console.log(uri); // Use environment variable for MongoDB connection string
